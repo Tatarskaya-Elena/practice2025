@@ -12,6 +12,7 @@ def main():
 
     sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "create_databases.sql"), log_sql=True)
     sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "create_ds_tables.sql"), log_sql=True)
+    sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "clear_tables.sql"), log_sql=True)
 
     ft_balance_f = spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "ft_balance_f.csv"), header=True)
     ft_balance_f = ft_balance_f \
@@ -20,7 +21,8 @@ def main():
         .withColumn("currency_rk", col("currency_rk").cast("decimal(38, 10)")) \
         .withColumn("balance_out", col("balance_out").cast("float")) \
 
-    ft_balance_f.write.format("hive").mode("append").saveAsTable("ds.ft_balance_f")
+    ft_balance_f_unique = ft_balance_f.dropDuplicates(['on_date', 'account_rk'])
+    ft_balance_f_unique.write.format("hive").mode("append").saveAsTable("ds.ft_balance_f")
 
     ft_posting_f = spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "ft_posting_f.csv"), header=True)
     ft_posting_f = ft_posting_f \
@@ -42,6 +44,7 @@ def main():
         .withColumn("currency_rk", col("currency_rk").cast("decimal(38, 10)")) \
         .withColumn("currency_code", col("currency_code").cast("string")) \
 
+    md_account_d_unique =  md_account_d.dropDuplicates(['data_actual_date', 'account_rk'])
     md_account_d.write.format("hive").mode("append").saveAsTable("ds.md_account_d")
 
     md_currency_d= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_currency_d.csv"), header=True)
@@ -52,7 +55,8 @@ def main():
         .withColumn("currency_code", col("currency_code").cast("string")) \
         .withColumn("code_iso_char", col("code_iso_char").cast("string")) \
 
-    md_currency_d.write.format("hive").mode("append").saveAsTable("ds.md_currency_d")
+    md_currency_d_unique =  md_currency_d.dropDuplicates(['currency_rk','data_actual_date'])
+    md_currency_d_unique.write.format("hive").mode("append").saveAsTable("ds.md_currency_d")
 
     md_exchange_rate_d= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_exchange_rate_d.csv"), header=True)
     md_exchange_rate_d = md_exchange_rate_d \
@@ -62,7 +66,8 @@ def main():
         .withColumn("reduced_cource", col("reduced_cource").cast("float")) \
         .withColumn("code_iso_num", col("code_iso_num").cast("string")) \
 
-    md_exchange_rate_d.write.format("hive").mode("append").saveAsTable("ds.md_exchange_rate_d")
+    md_exchange_rate_d_unique = md_exchange_rate_d.dropDuplicates(['data_actual_date','currency_rk'])
+    md_exchange_rate_d_unique.write.format("hive").mode("append").saveAsTable("ds.md_exchange_rate_d")
 
     md_ledger_account_s= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_ledger_account_s.csv"), header=True)
     md_ledger_account_s= md_ledger_account_s \
@@ -95,6 +100,8 @@ def main():
         .withColumn("ledger_acc_full_name_translit", lit("")) \
         .withColumn("is_revaluation", lit("")) \
         .withColumn("is_correct", lit(""))
-    md_ledger_account_s.write.format("hive").mode("append").saveAsTable("ds.md_ledger_account_s")
+    
+    md_ledger_account_s_unique = md_ledger_account_s.dropDuplicates(['ledger_account','start_date'])
+    md_ledger_account_s_unique.write.format("hive").mode("append").saveAsTable("ds.md_ledger_account_s")
 if __name__ == "__main__":
     main()
