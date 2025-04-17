@@ -64,7 +64,7 @@ def main():
 
     md_exchange_rate_d.write.format("hive").mode("append").saveAsTable("ds.md_exchange_rate_d")
 
-"""   md_ledger_account_s= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_ledger_account_s.csv"), header=True)
+    md_ledger_account_s= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_ledger_account_s.csv"), header=True)
     md_ledger_account_s= md_ledger_account_s \
         .withColumn("chapter", col("chapter").cast("string")) \
         .withColumn("chapter_name", col("chapter_name").cast("string")) \
@@ -75,27 +75,26 @@ def main():
         .withColumn("ledger1_account_name", col("ledger1_account_name").cast("string")) \
         .withColumn("ledger_account", col("ledger_account").cast("int")) \
         .withColumn("ledger_account_name", col("ledger_account_name").cast("string")) \
-        .withColumn("characteristic", col("characteristic").cast("int")) \
-        .withColumn("is_resident", col("is_resident").cast("int")) \
-        .withColumn("is_reserve", col("is_reserve").cast("int")) \
-        .withColumn("is_reserved", col("is_reserved").cast("int")) \
-        .withColumn("is_loan", col("is_loan").cast("int")) \
-        .withColumn("is_reserved_assets", col("is_reserved_assets").cast("int")) \
-        .withColumn("is_overdue", col("is_overdue").cast("int")) \
-        .withColumn("is_interest", col("is_interest").cast("int")) \
-        .withColumn("pair_account", col("pair_account").cast("string")) \
+        .withColumn("characteristic", col("characteristic").cast("string")) \
+        .withColumn("is_resident",lit(0)) \
+        .withColumn("is_reserve", lit(0)) \
+        .withColumn("is_reserved", lit(0)) \
+        .withColumn("is_loan", lit(0)) \
+        .withColumn("is_reserved_assets",lit(0)) \
+        .withColumn("is_overdue",lit(0)) \
+        .withColumn("is_interest", lit(0)) \
+        .withColumn("pair_account", lit("")) \
         .withColumn("start_date", to_date(col("start_date"))) \
         .withColumn("end_date", to_date(col("end_date"))) \
-        .withColumn("is_rub_only", col("is_rub_only").cast("int")) \
-        .withColumn("currency_code", col("currency_code").cast("string")) \
-        .withColumn("min_term", col("min_term").cast("string")) \
-        .withColumn("min_term_measure", col("min_term_measure").cast("string")) \
-        .withColumn("max_term", col("max_term").cast("string")) \
-        .withColumn("max_term_measure", col("max_term_measure").cast("string")) \
-        .withColumn("ledger_acc_full_name_translit", col("ledger_acc_full_name_translit").cast("string")) \
-        .withColumn("is_revaluation", col("is_revaluation").cast("string")) \
-        .withColumn("is_correct", col("is_correct").cast("string"))
+        .withColumn("is_rub_only", lit(0)) \
+        .withColumn("currency_code", lit("")) \
+        .withColumn("min_term", lit("")) \
+        .withColumn("min_term_measure", lit("")) \
+        .withColumn("max_term", lit("")) \
+        .withColumn("max_term_measure", lit("")) \
+        .withColumn("ledger_acc_full_name_translit", lit("")) \
+        .withColumn("is_revaluation", lit("")) \
+        .withColumn("is_correct", lit(""))
     md_ledger_account_s.write.format("hive").mode("append").saveAsTable("ds.md_ledger_account_s")
-"""
 if __name__ == "__main__":
     main()

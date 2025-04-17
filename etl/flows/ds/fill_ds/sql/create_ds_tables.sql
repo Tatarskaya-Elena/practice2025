@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS ds.md_ledger_account_s (
     ledger1_account_name STRING,
     ledger_account INT,
     ledger_account_name STRING,
-    characteristic INT,
+    characteristic STRING,
     is_resident INT,
     is_reserve INT,
     is_reserved INT,
