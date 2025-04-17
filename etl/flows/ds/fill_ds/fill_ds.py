@@ -1,4 +1,7 @@
 import os
+import time
+
+from datetime import datetime
 
 from etl.utils.spark_utils import *
 from pyspark.sql.functions import *
@@ -6,13 +9,23 @@ from pyspark.sql.functions import *
 SQL_PATH = os.path.join(os.path.dirname(__file__), "sql")
 DATA_PATH = os.environ.get("DATA_PATH")
 
+def log_process_start_end(spark, start_time, end_time):
+    log_data = [(start_time, end_time)]
+    log_df = spark.createDataFrame(log_data, ["start_time", "end_time"])
+    log_df.write.format("hive").mode("append").saveAsTable("log.data_load_logs")
 
 def main():
     spark = get_spark_session(app_name="fill_ds")
 
     sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "create_databases.sql"), log_sql=True)
+    sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "create_log_table.sql"), log_sql=True)
+
+    start_time = datetime.now() 
+
     sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "create_ds_tables.sql"), log_sql=True)
     sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "clear_tables.sql"), log_sql=True)
+
+    time.sleep(5)
 
     ft_balance_f = spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "ft_balance_f.csv"), header=True)
     ft_balance_f = ft_balance_f \
@@ -103,5 +116,9 @@ def main():
     
     md_ledger_account_s_unique = md_ledger_account_s.dropDuplicates(['ledger_account','start_date'])
     md_ledger_account_s_unique.write.format("hive").mode("append").saveAsTable("ds.md_ledger_account_s")
+
+    end_time = datetime.now() 
+    log_process_start_end(spark, start_time, end_time)
+
 if __name__ == "__main__":
     main()
