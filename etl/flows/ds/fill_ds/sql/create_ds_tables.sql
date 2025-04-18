@@ -56,7 +56,6 @@ CREATE TABLE IF NOT EXISTS ds.md_ledger_account_s (
     start_date DATE,
     end_date DATE,
     is_rub_only INT,
-    currency_code STRING,
     min_term STRING,
     min_term_measure STRING,
     max_term STRING,
