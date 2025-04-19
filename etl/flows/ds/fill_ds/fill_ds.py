@@ -9,10 +9,7 @@ from pyspark.sql.functions import *
 SQL_PATH = os.path.join(os.path.dirname(__file__), "sql")
 DATA_PATH = os.environ.get("DATA_PATH")
 
-def log_process_start_end(spark, start_time, end_time):
-    log_data = [(start_time, end_time)]
-    log_df = spark.createDataFrame(log_data, ["start_time", "end_time"])
-    log_df.write.format("hive").mode("append").saveAsTable("log.data_load_logs")
+
 
 def main():
     spark = get_spark_session(app_name="fill_ds")
@@ -26,9 +23,9 @@ def main():
     sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "clear_tables.sql"), log_sql=True)
 
     time.sleep(5)
-
-    ft_balance_f = spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "ft_balance_f.csv"), header=True)
-    ft_balance_f = ft_balance_f \
+    ft_balance_f=spark.read.table("ds.ft_balance_f")
+    ft_balance_f_new = spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "ft_balance_f.csv"), header=True)
+    ft_balance_f_new = ft_balance_f_new \
         .withColumn("on_date",
             when(col("on_date").rlike(r'^\d{2}-\d{2}-\d{4}$'), 
             to_date(unix_timestamp(col("on_date"), 'dd-MM-yyyy').cast('timestamp')))
@@ -41,14 +38,15 @@ def main():
         .withColumn("account_rk", col("account_rk").cast("decimal(38, 10)")) \
         .withColumn("currency_rk", col("currency_rk").cast("decimal(38, 10)")) \
         .withColumn("balance_out", col("balance_out").cast("float")) \
-
-    ft_balance_f = ft_balance_f.filter(
+    
+    ft_balance_f_new = ft_balance_f_new.filter(
     col("on_date").isNotNull() & 
     col("account_rk").isNotNull()
     )
-
-    ft_balance_f_unique = ft_balance_f.dropDuplicates(['on_date', 'account_rk'])
-    ft_balance_f_unique.write.format("hive").mode("append").saveAsTable("ds.ft_balance_f")
+    ft_balance_f_all=ft_balance_f.unionByName(ft_balance_f_new)
+    ft_balance_f_unique = ft_balance_f_all.dropDuplicates(['on_date', 'account_rk'])
+    #ft_balance_f_unique.createOrReplaceTempView("ft_balance_f_temp")
+    ft_balance_f_unique.write.format("hive").mode("append").insertInto("ds.ft_balance_f")
 
     ft_posting_f = spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "ft_posting_f.csv"), header=True)
     ft_posting_f = ft_posting_f \
@@ -73,9 +71,10 @@ def main():
     )
 
     ft_posting_f.write.format("hive").mode("append").saveAsTable("ds.ft_posting_f")
-    
-    md_account_d= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_account_d.csv"), header=True)
-    md_account_d = md_account_d \
+
+    md_account_d=spark.read.table("ds.md_account_d")
+    md_account_d_new= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_account_d.csv"), header=True)
+    md_account_d_new = md_account_d_new \
         .withColumn("data_actual_date",
             when(col("data_actual_date").rlike(r'^\d{2}-\d{2}-\d{4}$'), 
             to_date(unix_timestamp(col("data_actual_date"), 'dd-MM-yyyy').cast('timestamp')))
@@ -100,7 +99,7 @@ def main():
         .withColumn("currency_rk", col("currency_rk").cast("decimal(38, 10)")) \
         .withColumn("currency_code", col("currency_code").cast("string")) \
         
-    md_account_d = md_account_d.filter(
+    md_account_d_new = md_account_d_new.filter(
     col("data_actual_date").isNotNull() & 
     col("data_actual_end_date").isNotNull()&
     col("account_rk").isNotNull() & 
@@ -110,17 +109,18 @@ def main():
     col("currency_code").isNotNull()
     )
 
-    md_account_d = md_account_d.filter(
+    md_account_d_new = md_account_d_new.filter(
     (length(col("account_number")) <= 20) &
     (length(col("char_type")) <= 1) &
     (length(col("currency_code")) <= 3)
     )
+    md_account_d_all=md_account_d.unionByName(md_account_d_new)
+    md_account_d_unique =  md_account_d_all.dropDuplicates(['data_actual_date', 'account_rk'])
+    md_account_d_unique.createOrReplaceTempView("md_account_d_temp")
 
-    md_account_d_unique =  md_account_d.dropDuplicates(['data_actual_date', 'account_rk'])
-    md_account_d_unique.write.format("hive").mode("append").saveAsTable("ds.md_account_d")
-
-    md_currency_d= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_currency_d.csv"), header=True)
-    md_currency_d = md_currency_d \
+    md_currency_d=spark.read.table("ds.md_currency_d")
+    md_currency_d_new= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_currency_d.csv"), header=True)
+    md_currency_d_new = md_currency_d_new \
         .withColumn("currency_rk", col("currency_rk").cast("decimal(38, 10)")) \
         .withColumn("data_actual_date",
             when(col("data_actual_date").rlike(r'^\d{2}-\d{2}-\d{4}$'), 
@@ -143,18 +143,18 @@ def main():
         .withColumn("currency_code", col("currency_code").cast("string")) \
         .withColumn("code_iso_char", col("code_iso_char").cast("string")) \
         
-    md_currency_d = md_currency_d.filter(
+    md_currency_d_new = md_currency_d_new.filter(
     col("currency_rk").isNotNull() & 
     col("data_actual_date").isNotNull()
     )
 
-    md_currency_d = md_currency_d.filter(
+    md_currency_d_new = md_currency_d_new.filter(
     (length(col("currency_code")) <= 3) &
     (length(col("code_iso_char")) <= 3)
     )
-
-    md_currency_d_unique =  md_currency_d.dropDuplicates(['currency_rk','data_actual_date'])
-    md_currency_d_unique.write.format("hive").mode("append").saveAsTable("ds.md_currency_d")
+    md_currency_d_all=md_currency_d.unionByName(md_currency_d_new)
+    md_currency_d_unique =  md_currency_d_all.dropDuplicates(['currency_rk','data_actual_date'])
+    md_currency_d_unique.createOrReplaceTempView("md_currency_d_temp")
 
     md_exchange_rate_d= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_exchange_rate_d.csv"), header=True)
     md_exchange_rate_d = md_exchange_rate_d \
@@ -188,7 +188,7 @@ def main():
     md_exchange_rate_d = md_exchange_rate_d.filter(
     (length(col("code_iso_num")) <= 3)
     )
-
+    
     md_exchange_rate_d_unique = md_exchange_rate_d.dropDuplicates(['data_actual_date','currency_rk'])
     md_exchange_rate_d_unique.write.format("hive").mode("append").saveAsTable("ds.md_exchange_rate_d")
 
@@ -266,7 +266,9 @@ def main():
     md_ledger_account_s_unique.write.format("hive").mode("append").saveAsTable("ds.md_ledger_account_s")
 
     end_time = datetime.now() 
-    log_process_start_end(spark, start_time, end_time)
+    log_process_start_end(spark,"fill_ds", start_time, end_time)
+    #sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "overwrite_tables.sql"), log_sql=True)
+    spark.sql('SELECT * FROM log.data_load_logs').show()
 
 if __name__ == "__main__":
     main()
