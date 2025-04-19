@@ -18,7 +18,7 @@ def sql_from_file(spark: SparkSession, file_path: str, log_sql: bool = False, **
         if sentance:
             spark.sql(sentance)
 
-def log_process_start_end(spark, names, start_time, end_time):
-    log_data = [(names, start_time, end_time)]
-    log_df = spark.createDataFrame(log_data, ["names","start_time", "end_time"])
+def log_process_start_end(spark, names, start_time, end_time,fal):
+    log_data = [(names, start_time, end_time, fal)]
+    log_df = spark.createDataFrame(log_data, ["names","start_time", "end_time", "fal"])
     log_df.write.format("hive").mode("append").saveAsTable("log.data_load_logs")
