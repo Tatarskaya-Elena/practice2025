@@ -156,7 +156,7 @@ def main():
         )
         md_currency_d_all=md_currency_d.unionByName(md_currency_d_new).checkpoint()
         md_currency_d_unique =  md_currency_d_all.dropDuplicates(['currency_rk','data_actual_date'])
-        md_currency_d_unique.format("hive").mode("overwrite").insertInto("ds.md_currency_d")
+        md_currency_d_unique.write.format("hive").mode("overwrite").insertInto("ds.md_currency_d")
 
         md_exchange_rate_d=spark.read.table("ds.md_exchange_rate_d")
         md_exchange_rate_d_new= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_exchange_rate_d.csv"), header=True)
@@ -275,6 +275,6 @@ def main():
     finally:
         end_time = datetime.now() 
         log_process_start_end(spark,"fill_ds", start_time, end_time, fal)
-
+        
 if __name__ == "__main__":
     main()
