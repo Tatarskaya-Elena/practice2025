@@ -6,7 +6,12 @@ CREATE TABLE IF NOT EXISTS dm.dm_account_turnover_f(
     debet_amount DECIMAL,
     debet_amount_rub DECIMAL
 ) STORED AS PARQUET;
-
+CREATE TABLE IF NOT EXISTS dm.dm_account_balance_f(
+    on_date DATE,
+    account_rk DECIMAL,
+    balance_out DECIMAL,
+    balance_out_rub DECIMAL
+) STORED AS PARQUET;
 CREATE TABLE IF NOT EXISTS dm.dm_f101_round_f(
     FROM_DATE DATE,
     TO_DATE DATE,
