@@ -10,12 +10,6 @@ SQL_PATH = os.path.join(os.path.dirname(__file__), "sql")
 spark = get_spark_session(app_name="fill_dm")
 spark.sparkContext.setCheckpointDir(os.path.join(SQL_PATH,"tmp"))
 
-def fill_account_turnover_f(date):
-    df = spark.table("dm.dm_account_turnover_f")
-    filtered_df = df.filter(col("on_date") != date).checkpoint()
-    filtered_df.write.mode('overwrite').saveAsTable("dm.dm_account_turnover_f")
-    sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "fill_account_turnover_f.sql"), log_sql=True, on_date=date)
-
 def fill_account_balance_f(date):
     df = spark.table("dm.dm_account_balance_f")
     filtered_df = df.filter(col("on_date") != date).checkpoint()
