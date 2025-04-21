@@ -7,7 +7,7 @@ from etl.utils.spark_utils import *
 from pyspark.sql.functions import *
 
 SQL_PATH = os.path.join(os.path.dirname(__file__), "sql")
-spark = get_spark_session(app_name="fill_dm")
+spark = get_spark_session(app_name="fill_dm_account_turnover_f")
 spark.sparkContext.setCheckpointDir(os.path.join(SQL_PATH,"tmp"))
 
 def fill_account_turnover_f(date):
