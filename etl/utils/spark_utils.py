@@ -3,20 +3,22 @@ import logging
 
 
 def get_spark_session(app_name: str = "App") -> SparkSession:
-    return SparkSession.builder.master("local[*]").enableHiveSupport().getOrCreate()
+    return SparkSession.builder.master("local[*]").enableHiveSupport().config("spark.sql.source.partitionOverwriteMode","dynamic").getOrCreate()
 
 
 def sql_from_file(spark: SparkSession, file_path: str, log_sql: bool = False, **kwargs):
     sql = open(file_path).read().format(**kwargs).split(";")
-
+    result=[]
     for sentance in sql:
         sentance = sentance.strip()
 
         if log_sql:
-            logging.info(sentance)
+            logging.warning(sentance)
             
         if sentance:
-            spark.sql(sentance)
+            result.append(spark.sql(sentance))
+    return result
+        
 
 def log_process_start_end(spark, names, start_time, end_time,fal):
     log_data = [(names, start_time, end_time, fal)]
