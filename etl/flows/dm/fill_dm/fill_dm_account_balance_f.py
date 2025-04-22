@@ -34,5 +34,6 @@ def main():
     finally:
         end_time = datetime.now()
         log_process_start_end(spark,"fill_account_balance_f", start_time, end_time, fal)
+
 if __name__ == "__main__":
     main()
