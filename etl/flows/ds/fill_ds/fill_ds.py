@@ -37,10 +37,10 @@ def main():
                 to_date(unix_timestamp(col("on_date"), 'dd.MM.yyyy').cast('timestamp')))
             .otherwise(None)
         ) \
-            .withColumn("account_rk", col("account_rk").cast("decimal(38, 10)")) \
-            .withColumn("currency_rk", col("currency_rk").cast("decimal(38, 10)")) \
+            .withColumn("account_rk", col("account_rk").cast("decimal(23,8)")) \
+            .withColumn("currency_rk", col("currency_rk").cast("decimal(23,8)")) \
             .withColumn("balance_out", col("balance_out").cast("float")) \
-        
+            
         ft_balance_f_new = ft_balance_f_new.filter(
         col("on_date").isNotNull() & 
         col("account_rk").isNotNull()
@@ -85,7 +85,7 @@ def main():
                 to_date(unix_timestamp(col("data_actual_date"), 'dd.MM.yyyy').cast('timestamp')))
             .otherwise(None)
         ) \
-        .withColumn("data_actual_end_date",
+            .withColumn("data_actual_end_date",
                 when(col("data_actual_end_date").rlike(r'^\d{2}-\d{2}-\d{4}$'), 
                 to_date(unix_timestamp(col("data_actual_end_date"), 'dd-MM-yyyy').cast('timestamp')))
                 .when(col("data_actual_end_date").rlike(r'^\d{4}-\d{2}-\d{2}$'), 
@@ -94,12 +94,12 @@ def main():
                 to_date(unix_timestamp(col("data_actual_end_date"), 'dd.MM.yyyy').cast('timestamp')))
             .otherwise(None)
         ) \
-            .withColumn("account_rk", col("account_rk").cast("decimal(38, 10)")) \
+            .withColumn("account_rk", col("account_rk").cast("decimal(23,8)")) \
             .withColumn("account_number", col("account_number").cast("string")) \
             .withColumn("char_type", col("char_type").cast("string")) \
-            .withColumn("currency_rk", col("currency_rk").cast("decimal(38, 10)")) \
+            .withColumn("currency_rk", col("currency_rk").cast("decimal(23,8)")) \
             .withColumn("currency_code", col("currency_code").cast("string")) \
-            
+                
         md_account_d_new = md_account_d_new.filter(
         col("data_actual_date").isNotNull() & 
         col("data_actual_end_date").isNotNull()&
@@ -123,7 +123,7 @@ def main():
         md_currency_d=spark.read.table("ds.md_currency_d")
         md_currency_d_new= spark.read.option("delimiter", ";").csv(os.path.join(DATA_PATH, "md_currency_d.csv"), header=True)
         md_currency_d_new = md_currency_d_new \
-            .withColumn("currency_rk", col("currency_rk").cast("decimal(38, 10)")) \
+            .withColumn("currency_rk", col("currency_rk").cast("decimal(23,8)")) \
             .withColumn("data_actual_date",
                 when(col("data_actual_date").rlike(r'^\d{2}-\d{2}-\d{4}$'), 
                 to_date(unix_timestamp(col("data_actual_date"), 'dd-MM-yyyy').cast('timestamp')))
@@ -144,7 +144,7 @@ def main():
         ) \
             .withColumn("currency_code", col("currency_code").cast("string")) \
             .withColumn("code_iso_char", col("code_iso_char").cast("string")) \
-            
+                
         md_currency_d_new = md_currency_d_new.filter(
         col("currency_rk").isNotNull() & 
         col("data_actual_date").isNotNull()
@@ -179,10 +179,10 @@ def main():
                 to_date(unix_timestamp(col("data_actual_end_date"), 'dd.MM.yyyy').cast('timestamp')))
             .otherwise(None)
         ) \
-            .withColumn("currency_rk", col("currency_rk").cast("decimal(38, 10)")) \
+            .withColumn("currency_rk", col("currency_rk").cast("decimal(23,8)")) \
             .withColumn("reduced_cource", col("reduced_cource").cast("float")) \
             .withColumn("code_iso_num", col("code_iso_num").cast("string")) \
-    
+        
         md_exchange_rate_d_new = md_exchange_rate_d_new.filter(
         col("data_actual_date").isNotNull() &
         col("currency_rk").isNotNull()
@@ -225,7 +225,7 @@ def main():
                 to_date(unix_timestamp(col("start_date"), 'dd.MM.yyyy').cast('timestamp')))
             .otherwise(None)
         ) \
-            .withColumn("end_date",
+                .withColumn("end_date",
                 when(col("end_date").rlike(r'^\d{2}-\d{2}-\d{4}$'), 
                 to_date(unix_timestamp(col("end_date"), 'dd-MM-yyyy').cast('timestamp')))
                 .when(col("end_date").rlike(r'^\d{4}-\d{2}-\d{2}$'), 
@@ -242,7 +242,7 @@ def main():
             .withColumn("ledger_acc_full_name_translit", lit("")) \
             .withColumn("is_revaluation", lit("")) \
             .withColumn("is_correct", lit(""))
-        
+            
         md_ledger_account_s_new = md_ledger_account_s_new.filter(
         col("ledger_account").isNotNull() & 
         col("start_date").isNotNull()
