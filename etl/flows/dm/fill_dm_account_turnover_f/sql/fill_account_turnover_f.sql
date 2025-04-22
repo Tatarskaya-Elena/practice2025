@@ -8,9 +8,9 @@ SELECT
 FROM 
     ds.md_account_d account_d
 LEFT JOIN 
-    ds.ft_posting_f posting_d ON posting_d.debet_account_rk=account_d.account_rk 
+    ds.ft_posting_f posting_d ON posting_d.debet_account_rk=account_d.account_rk AND posting_d.oper_date = TO_DATE('{on_date}')
 LEFT JOIN 
-    ds.ft_posting_f posting_c ON posting_c.credit_account_rk = account_d.account_rk
+    ds.ft_posting_f posting_c ON posting_c.credit_account_rk = account_d.account_rk AND posting_c.oper_date = TO_DATE('{on_date}')
 LEFT JOIN 
     (SELECT 
          currency_rk, 

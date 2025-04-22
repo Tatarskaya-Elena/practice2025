@@ -18,7 +18,7 @@ def main():
     fal=False
     start_time = datetime.now() 
     try:
-        sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "create_showcase.sql"), log_sql=True
+        sql_from_file(spark=spark, file_path=os.path.join(SQL_PATH, "create_showcase.sql"), log_sql=True)
         current_date = datetime(2018, 1, 1)
         while current_date <= datetime(2018, 1, 31):
             fill_account_turnover_f(current_date.date())

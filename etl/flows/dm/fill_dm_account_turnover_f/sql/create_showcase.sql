@@ -1,4 +1,3 @@
-DROP TABLE IF EXISTS dm.dm_account_turnover_f;
 CREATE TABLE IF NOT EXISTS dm.dm_account_turnover_f(
     account_rk DECIMAL(23,8),
     credit_amount DECIMAL(23,8),
@@ -6,11 +5,10 @@ CREATE TABLE IF NOT EXISTS dm.dm_account_turnover_f(
     debet_amount DECIMAL(23,8),
     debet_amount_rub DECIMAL(23,8)
 ) PARTITIONED BY (on_date DATE) STORED AS PARQUET;
-DROP TABLE IF EXISTS dm.dm_account_balance_f;
 CREATE TABLE IF NOT EXISTS dm.dm_account_balance_f(
-    account_rk DECIMAL(23,8),
-    balance_out DECIMAL(23,8),
-    balance_out_rub DECIMAL(23,8)
+    account_rk DECIMAL(38,8),
+    balance_out DECIMAL(38,8),
+    balance_out_rub DECIMAL(38,8)
 ) PARTITIONED BY (on_date DATE) STORED AS PARQUET;
 CREATE TABLE IF NOT EXISTS dm.dm_f101_round_f(
     FROM_DATE DATE,
