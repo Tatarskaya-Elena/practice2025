@@ -63,7 +63,7 @@ SELECT
 FROM 
     ds.md_account_d a
 LEFT JOIN 
-    dm.dm_account_balance_f b ON a.account_rk = b.account_rk AND b.on_date = DATE_TRUNC('month', DATE '{date}') - INTERVAL '1 MONTH' - INTERVAL '1 DAY' OR b.on_date = LAST_DAY(DATE_TRUNC('month', DATE '{date}') - INTERVAL '1 MONTH')
+    dm.dm_account_balance_f b ON a.account_rk = b.account_rk AND (b.on_date = DATE_TRUNC('month', DATE '{date}') - INTERVAL '1 MONTH' - INTERVAL '1 DAY' OR b.on_date = LAST_DAY(DATE_TRUNC('month', DATE '{date}') - INTERVAL '1 MONTH'))
 LEFT JOIN 
     dm.dm_account_turnover_f t ON a.account_rk = t.account_rk AND t.on_date BETWEEN DATE_TRUNC('month', DATE '{date}') - INTERVAL '1 MONTH' AND LAST_DAY(DATE_TRUNC('month', DATE '{date}') - INTERVAL '1 MONTH')
 JOIN 
